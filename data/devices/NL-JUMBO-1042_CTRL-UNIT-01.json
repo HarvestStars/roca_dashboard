@@ -1,0 +1,14 @@
+{
+  "sim": { "online": true, "interval_sec": 10 },
+  "protocol_version": "1.0",
+  "store_id": "NL-JUMBO-1042",
+  "controller_id": "CTRL-UNIT-01",
+  "firmware_version": "v2.4.1",
+  "power": { "voltage_mv": 12150, "current_ma": 420, "status": "NORMAL" },
+  "peripherals": {
+    "perimeter_loop_1":   { "port": "J2", "impedance_ohms": 99999, "status": "OPEN_CIRCUIT", "signal_tx_active": false },
+    "checkout_antenna_2": { "port": "J4", "impedance_ohms": 52, "status": "CONNECTED", "signal_tx_active": true },
+    "cctv_trigger_relay": { "port": "J6", "status": "CLOSED" }
+  },
+  "ambient": { "temp_celsius": 24.5 }
+}

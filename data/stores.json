@@ -1,0 +1,35 @@
+[
+  {
+    "store_id": "NL-JUMBO-1042", "name": "Jumbo Rotterdam Centrum", "chain": "Jumbo",
+    "city": "Rotterdam", "country": "NL", "language": "nl", "latitude": 51.9225, "longitude": 4.4792,
+    "controllers": [{ "controller_id": "CTRL-UNIT-01", "model": "Rocateq Controller Box Pro v2", "location": "onder kassa 1" }]
+  },
+  {
+    "store_id": "NL-AH-2210", "name": "Albert Heijn Amsterdam Zuid", "chain": "Albert Heijn",
+    "city": "Amsterdam", "country": "NL", "language": "nl", "latitude": 52.3383, "longitude": 4.8722,
+    "controllers": [{ "controller_id": "CTRL-UNIT-01", "model": "Rocateq Controller Box Pro v2", "location": "in de technische ruimte" }]
+  },
+  {
+    "store_id": "FR-CARREFOUR-7712", "name": "Carrefour Paris Montparnasse", "chain": "Carrefour",
+    "city": "Paris", "country": "FR", "language": "fr", "latitude": 48.8422, "longitude": 2.3219,
+    "controllers": [{ "controller_id": "CTRL-UNIT-01", "model": "Rocateq Controller Box Pro v2", "location": "derrière l'accueil client" }]
+  },
+  {
+    "store_id": "DE-REWE-3301", "name": "REWE Berlin Mitte", "chain": "REWE",
+    "city": "Berlin", "country": "DE", "language": "de", "latitude": 52.5200, "longitude": 13.4050,
+    "controllers": [{ "controller_id": "CTRL-UNIT-01", "model": "Rocateq Controller Box Pro v2", "location": "unter Kasse 3" }]
+  },
+  {
+    "store_id": "BE-DELHAIZE-0551", "name": "Delhaize Bruxelles Louise", "chain": "Delhaize",
+    "city": "Brussels", "country": "BE", "language": "fr", "latitude": 50.8320, "longitude": 4.3580,
+    "controllers": [{ "controller_id": "CTRL-UNIT-01", "model": "Rocateq Controller Box Lite v1", "location": "sous la caisse 2" }]
+  },
+  {
+    "store_id": "GB-TESCO-8812", "name": "Tesco London Kensington", "chain": "Tesco",
+    "city": "London", "country": "GB", "language": "en", "latitude": 51.4990, "longitude": -0.1930,
+    "controllers": [
+      { "controller_id": "CTRL-UNIT-01", "model": "Rocateq Controller Box Pro v2", "location": "under checkout 1" },
+      { "controller_id": "CTRL-UNIT-02", "model": "Rocateq Controller Box Pro v2", "location": "at the car park entrance" }
+    ]
+  }
+]

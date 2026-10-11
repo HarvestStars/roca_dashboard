@@ -1,0 +1,18 @@
+# Demo: only Grafana runs in Docker. The Go service runs on the host
+# (go run ./cmd/rocadash) and Grafana reaches it via host.docker.internal.
+services:
+  grafana:
+    image: grafana/grafana:12.2.0
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_PLUGINS_PREINSTALL_SYNC=yesoreyeram-infinity-datasource@3.11.1
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/var/lib/grafana/dashboards/rocateq-ops.json
+      - GF_USERS_DEFAULT_THEME=dark
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./deploy/grafana/provisioning:/etc/grafana/provisioning
+      - ./deploy/grafana/dashboards:/var/lib/grafana/dashboards

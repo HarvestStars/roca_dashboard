@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0f172a">
+  <title>Rocateq Store Assistant</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="logo">R</span> Rocateq <span class="muted" data-i18n="assistant">Store Assistant</span></div>
+    <div class="pickers">
+      <select id="store" aria-label="Store"></select>
+      <select id="lang" aria-label="Language">
+        <option value="">Auto</option>
+        <option value="en">EN</option>
+        <option value="nl">NL</option>
+        <option value="fr">FR</option>
+        <option value="de">DE</option>
+      </select>
+    </div>
+  </header>
+
+  <main id="app">
+    <section class="status-card" id="status-card">
+      <div class="light" id="light"></div>
+      <div>
+        <div class="store-name" id="store-name">—</div>
+        <h1 id="status-title">…</h1>
+        <div class="muted" id="status-sub"></div>
+      </div>
+    </section>
+
+    <section class="card hidden" id="wizard">
+      <div class="wizard-head">
+        <h2 id="guide-title"></h2>
+        <span class="pill" id="fix-time"></span>
+      </div>
+      <ol class="steps" id="steps"></ol>
+      <div class="actions">
+        <button class="btn primary" id="verify"></button>
+        <button class="btn ghost" id="escalate"></button>
+      </div>
+      <div class="result hidden" id="result"></div>
+      <div class="meta" id="meta"></div>
+    </section>
+
+    <section class="card hidden" id="ticket-card">
+      <div class="ticket-icon">🧑‍🔧</div>
+      <div>
+        <h2 data-i18n="ticketTitle">Rocateq support is on it</h2>
+        <p id="ticket-text" class="muted"></p>
+      </div>
+    </section>
+
+    <section class="card">
+      <h3 data-i18n="devices">Your Rocateq devices</h3>
+      <ul class="devices" id="devices"></ul>
+    </section>
+  </main>
+
+  <footer class="muted foot" id="foot"></footer>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,1983 @@
+{
+  "uid": "rocateq-ops",
+  "title": "Rocateq Operations - Remote Diagnostics",
+  "tags": [
+    "rocateq",
+    "demo"
+  ],
+  "timezone": "browser",
+  "refresh": "5s",
+  "schemaVersion": 39,
+  "editable": true,
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "api",
+        "label": "API base",
+        "type": "constant",
+        "hide": 2,
+        "query": "http://host.docker.internal:8080"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Healthy stores",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "rocateq-api"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "rocateq-api"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "parser": "backend",
+          "url": "${api}/api/v1/ops/summary",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [
+            {
+              "selector": "healthy",
+              "text": "Healthy stores",
+              "type": "number"
+            }
+          ],
+          "filters": []
+        }
+      ],
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "green"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Store can self-fix",
+      "gridPos": {
+        "x": 4,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "rocateq-api"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "rocateq-api"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "parser": "backend",
+          "url": "${api}/api/v1/ops/summary",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [
+            {
+              "selector": "action_required",
+              "text": "Store can self-fix",
+              "type": "number"
+            }
+          ],
+          "filters": []
+        }
+      ],
+      "description": "Open self-fixable issue; the store manager is being guided by the wizard.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "red"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Technician dispatched",
+      "gridPos": {
+        "x": 8,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "rocateq-api"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "rocateq-api"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "parser": "backend",
+          "url": "${api}/api/v1/ops/summary",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [
+            {
+              "selector": "escalated",
+              "text": "Technician dispatched",
+              "type": "number"
+            }
+          ],
+          "filters": []
+        }
+      ],
+      "description": "Qualified ticket open (hardware fault or manager escalation).",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "orange"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "orange",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Offline stores",
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "rocateq-api"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "rocateq-api"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "parser": "backend",
+          "url": "${api}/api/v1/ops/summary",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [
+            {
+              "selector": "offline",
+              "text": "Offline stores",
+              "type": "number"
+            }
+          ],
+          "filters": []
+        }
+      ],
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "dark-red"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "dark-red",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      }
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Site trips avoided",
+      "gridPos": {
+        "x": 16,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "rocateq-api"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "rocateq-api"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "parser": "backend",
+          "url": "${api}/api/v1/ops/summary",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [
+            {
+              "selector": "trips_avoided",
+              "text": "Site trips avoided",
+              "type": "number"
+            }
+          ],
+          "filters": []
+        }
+      ],
+      "description": "Issues closed by the store itself (SELF_RESOLVED).",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      }
+    },
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "Est. travel cost avoided",
+      "gridPos": {
+        "x": 20,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "rocateq-api"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "rocateq-api"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "parser": "backend",
+          "url": "${api}/api/v1/ops/summary",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [
+            {
+              "selector": "est_savings_eur",
+              "text": "Est. travel cost avoided",
+              "type": "number"
+            }
+          ],
+          "filters": []
+        }
+      ],
+      "description": "trips avoided x AVOIDED_TRIP_COST_EUR",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyEUR",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "purple"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "purple",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      }
+    },
+    {
+      "id": 7,
+      "type": "geomap",
+      "title": "Store fleet map",
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 10,
+        "h": 12
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "rocateq-api"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "rocateq-api"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "parser": "backend",
+          "url": "${api}/api/v1/ops/stores",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [
+            {
+              "selector": "name",
+              "text": "Store",
+              "type": "string"
+            },
+            {
+              "selector": "city",
+              "text": "City",
+              "type": "string"
+            },
+            {
+              "selector": "status",
+              "text": "Status",
+              "type": "string"
+            },
+            {
+              "selector": "status_rank",
+              "text": "status_rank",
+              "type": "number"
+            },
+            {
+              "selector": "latitude",
+              "text": "latitude",
+              "type": "number"
+            },
+            {
+              "selector": "longitude",
+              "text": "longitude",
+              "type": "number"
+            },
+            {
+              "selector": "issue_code",
+              "text": "Issue",
+              "type": "string"
+            }
+          ],
+          "filters": []
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "#8e8e8e",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 2
+              },
+              {
+                "color": "orange",
+                "value": 3
+              },
+              {
+                "color": "dark-red",
+                "value": 5
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "view": {
+          "id": "coords",
+          "lat": 51.2,
+          "lon": 4.8,
+          "zoom": 4.8
+        },
+        "controls": {
+          "showZoom": true,
+          "mouseWheelZoom": true
+        },
+        "basemap": {
+          "type": "carto",
+          "name": "Basemap",
+          "config": {
+            "theme": "auto",
+            "showLabels": true
+          }
+        },
+        "layers": [
+          {
+            "type": "markers",
+            "name": "Stores",
+            "tooltip": true,
+            "location": {
+              "mode": "coords",
+              "latitude": "latitude",
+              "longitude": "longitude"
+            },
+            "config": {
+              "showLegend": false,
+              "style": {
+                "size": {
+                  "fixed": 12
+                },
+                "opacity": 0.9,
+                "symbol": {
+                  "mode": "fixed",
+                  "fixed": "img/icons/marker/circle.svg"
+                },
+                "color": {
+                  "field": "status_rank",
+                  "fixed": "green"
+                },
+                "text": {
+                  "mode": "field",
+                  "field": "Store",
+                  "fixed": ""
+                },
+                "textConfig": {
+                  "fontSize": 11,
+                  "offsetY": -18,
+                  "textAlign": "center",
+                  "textBaseline": "middle"
+                }
+              }
+            }
+          }
+        ],
+        "tooltip": {
+          "mode": "details"
+        }
+      }
+    },
+    {
+      "id": 8,
+      "type": "table",
+      "title": "Store fleet status",
+      "gridPos": {
+        "x": 10,
+        "y": 4,
+        "w": 14,
+        "h": 12
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "rocateq-api"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "rocateq-api"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "parser": "backend",
+          "url": "${api}/api/v1/ops/stores",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [
+            {
+              "selector": "status",
+              "text": "Status",
+              "type": "string"
+            },
+            {
+              "selector": "name",
+              "text": "Store",
+              "type": "string"
+            },
+            {
+              "selector": "store_id",
+              "text": "Store ID",
+              "type": "string"
+            },
+            {
+              "selector": "city",
+              "text": "City",
+              "type": "string"
+            },
+            {
+              "selector": "country",
+              "text": "Country",
+              "type": "string"
+            },
+            {
+              "selector": "controllers",
+              "text": "Controllers",
+              "type": "number"
+            },
+            {
+              "selector": "issue_code",
+              "text": "Active issue",
+              "type": "string"
+            },
+            {
+              "selector": "issue_since",
+              "text": "Since",
+              "type": "timestamp"
+            },
+            {
+              "selector": "last_seen",
+              "text": "Last report",
+              "type": "timestamp"
+            }
+          ],
+          "filters": []
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "filterable": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Status"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "basic"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "HEALTHY": {
+                        "color": "green",
+                        "index": 0,
+                        "text": "Healthy"
+                      },
+                      "UNKNOWN": {
+                        "color": "#8e8e8e",
+                        "index": 1,
+                        "text": "Unknown"
+                      },
+                      "ACTION_REQUIRED": {
+                        "color": "red",
+                        "index": 2,
+                        "text": "Store can self-fix"
+                      },
+                      "ESCALATED": {
+                        "color": "orange",
+                        "index": 3,
+                        "text": "Technician dispatched"
+                      },
+                      "SERVICE_REQUIRED": {
+                        "color": "orange",
+                        "index": 4,
+                        "text": "Technician needed"
+                      },
+                      "OFFLINE": {
+                        "color": "dark-red",
+                        "index": 5,
+                        "text": "Offline"
+                      },
+                      "OPEN": {
+                        "color": "red",
+                        "index": 6
+                      },
+                      "RESOLVED": {
+                        "color": "green",
+                        "index": 7
+                      },
+                      "CLOSED": {
+                        "color": "green",
+                        "index": 8
+                      },
+                      "SELF_RESOLVED": {
+                        "color": "green",
+                        "index": 9,
+                        "text": "Self-resolved (trip avoided)"
+                      },
+                      "RESOLVED_BY_SERVICE": {
+                        "color": "blue",
+                        "index": 10,
+                        "text": "Resolved by service"
+                      },
+                      "SUPERSEDED": {
+                        "color": "#8e8e8e",
+                        "index": 11
+                      },
+                      "AUTO": {
+                        "color": "purple",
+                        "index": 12,
+                        "text": "Auto (rule engine)"
+                      },
+                      "STORE_MANAGER": {
+                        "color": "blue",
+                        "index": 13,
+                        "text": "Store manager"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "indexByName": {
+              "Status": 0,
+              "Store": 1,
+              "Store ID": 2,
+              "City": 3,
+              "Country": 4,
+              "Controllers": 5,
+              "Active issue": 6,
+              "Since": 7,
+              "Last report": 8
+            }
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        }
+      }
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "Controller supply voltage",
+      "gridPos": {
+        "x": 0,
+        "y": 16,
+        "w": 12,
+        "h": 9
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "rocateq-api"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "rocateq-api"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "parser": "backend",
+          "url": "${api}/api/v1/ops/telemetry?metric=voltage_mv&from=${__from}&to=${__to}&step_ms=${__interval_ms}",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [
+            {
+              "selector": "time",
+              "text": "time",
+              "type": "timestamp_epoch"
+            },
+            {
+              "selector": "series",
+              "text": "series",
+              "type": "string"
+            },
+            {
+              "selector": "value",
+              "text": "value",
+              "type": "number"
+            }
+          ],
+          "filters": []
+        }
+      ],
+      "description": "Below 10 V (red line) the engine raises POWER_SUPPLY_ABNORMAL.",
+      "transformations": [
+        {
+          "id": "partitionByValues",
+          "options": {
+            "fields": [
+              "series"
+            ],
+            "keepFields": false,
+            "naming": {
+              "asLabels": true
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "mvolt",
+          "displayName": "${__field.labels.series}",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "spanNulls": true,
+            "showPoints": "never",
+            "fillOpacity": 0,
+            "thresholdsStyle": {
+              "mode": "line"
+            }
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 10000
+              }
+            ]
+          },
+          "min": 8000
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "Perimeter loop impedance",
+      "gridPos": {
+        "x": 12,
+        "y": 16,
+        "w": 12,
+        "h": 9
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "rocateq-api"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "rocateq-api"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "parser": "backend",
+          "url": "${api}/api/v1/ops/telemetry?metric=loop_impedance&from=${__from}&to=${__to}&step_ms=${__interval_ms}",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [
+            {
+              "selector": "time",
+              "text": "time",
+              "type": "timestamp_epoch"
+            },
+            {
+              "selector": "series",
+              "text": "series",
+              "type": "string"
+            },
+            {
+              "selector": "value",
+              "text": "value",
+              "type": "number"
+            }
+          ],
+          "filters": []
+        }
+      ],
+      "description": "Above 10 kOhm (red line) a loop is treated as open circuit -> LOOP_CABLE_DISCONNECTED.",
+      "transformations": [
+        {
+          "id": "partitionByValues",
+          "options": {
+            "fields": [
+              "series"
+            ],
+            "keepFields": false,
+            "naming": {
+              "asLabels": true
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ohm",
+          "displayName": "${__field.labels.series}",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "spanNulls": true,
+            "showPoints": "never",
+            "fillOpacity": 0,
+            "scaleDistribution": {
+              "type": "log",
+              "log": 10
+            },
+            "thresholdsStyle": {
+              "mode": "line"
+            }
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 10000
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 11,
+      "type": "table",
+      "title": "Open issues",
+      "gridPos": {
+        "x": 0,
+        "y": 25,
+        "w": 16,
+        "h": 8
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "rocateq-api"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "rocateq-api"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "parser": "backend",
+          "url": "${api}/api/v1/ops/issues?state=open",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [
+            {
+              "selector": "state",
+              "text": "State",
+              "type": "string"
+            },
+            {
+              "selector": "store_id",
+              "text": "Store",
+              "type": "string"
+            },
+            {
+              "selector": "controller_id",
+              "text": "Controller",
+              "type": "string"
+            },
+            {
+              "selector": "code",
+              "text": "Root cause",
+              "type": "string"
+            },
+            {
+              "selector": "severity",
+              "text": "Severity",
+              "type": "string"
+            },
+            {
+              "selector": "self_fixable",
+              "text": "Self-fixable",
+              "type": "string"
+            },
+            {
+              "selector": "target",
+              "text": "Target",
+              "type": "string"
+            },
+            {
+              "selector": "opened_at",
+              "text": "Opened",
+              "type": "timestamp"
+            },
+            {
+              "selector": "duration_min",
+              "text": "Open (min)",
+              "type": "number"
+            },
+            {
+              "selector": "verify_attempts",
+              "text": "Verify attempts",
+              "type": "number"
+            },
+            {
+              "selector": "ticket_id",
+              "text": "Ticket",
+              "type": "string"
+            }
+          ],
+          "filters": []
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "filterable": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "State"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "basic"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "HEALTHY": {
+                        "color": "green",
+                        "index": 0,
+                        "text": "Healthy"
+                      },
+                      "UNKNOWN": {
+                        "color": "#8e8e8e",
+                        "index": 1,
+                        "text": "Unknown"
+                      },
+                      "ACTION_REQUIRED": {
+                        "color": "red",
+                        "index": 2,
+                        "text": "Store can self-fix"
+                      },
+                      "ESCALATED": {
+                        "color": "orange",
+                        "index": 3,
+                        "text": "Technician dispatched"
+                      },
+                      "SERVICE_REQUIRED": {
+                        "color": "orange",
+                        "index": 4,
+                        "text": "Technician needed"
+                      },
+                      "OFFLINE": {
+                        "color": "dark-red",
+                        "index": 5,
+                        "text": "Offline"
+                      },
+                      "OPEN": {
+                        "color": "red",
+                        "index": 6
+                      },
+                      "RESOLVED": {
+                        "color": "green",
+                        "index": 7
+                      },
+                      "CLOSED": {
+                        "color": "green",
+                        "index": 8
+                      },
+                      "SELF_RESOLVED": {
+                        "color": "green",
+                        "index": 9,
+                        "text": "Self-resolved (trip avoided)"
+                      },
+                      "RESOLVED_BY_SERVICE": {
+                        "color": "blue",
+                        "index": 10,
+                        "text": "Resolved by service"
+                      },
+                      "SUPERSEDED": {
+                        "color": "#8e8e8e",
+                        "index": 11
+                      },
+                      "AUTO": {
+                        "color": "purple",
+                        "index": 12,
+                        "text": "Auto (rule engine)"
+                      },
+                      "STORE_MANAGER": {
+                        "color": "blue",
+                        "index": 13,
+                        "text": "Store manager"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "indexByName": {
+              "State": 0,
+              "Store": 1,
+              "Controller": 2,
+              "Root cause": 3,
+              "Severity": 4,
+              "Self-fixable": 5,
+              "Target": 6,
+              "Opened": 7,
+              "Open (min)": 8,
+              "Verify attempts": 9,
+              "Ticket": 10
+            }
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        }
+      }
+    },
+    {
+      "id": 12,
+      "type": "piechart",
+      "title": "Issues by root cause (all time)",
+      "gridPos": {
+        "x": 16,
+        "y": 25,
+        "w": 8,
+        "h": 8
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "rocateq-api"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "rocateq-api"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "parser": "backend",
+          "url": "${api}/api/v1/ops/root-causes",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [
+            {
+              "selector": "code",
+              "text": "code",
+              "type": "string"
+            },
+            {
+              "selector": "count",
+              "text": "count",
+              "type": "number"
+            }
+          ],
+          "filters": []
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "pieType": "donut",
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "values": [
+            "value"
+          ]
+        },
+        "displayLabels": []
+      }
+    },
+    {
+      "id": 13,
+      "type": "table",
+      "title": "Dispatch tickets (qualified)",
+      "gridPos": {
+        "x": 0,
+        "y": 33,
+        "w": 24,
+        "h": 8
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "rocateq-api"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "rocateq-api"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "parser": "backend",
+          "url": "${api}/api/v1/ops/tickets",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [
+            {
+              "selector": "status",
+              "text": "Status",
+              "type": "string"
+            },
+            {
+              "selector": "ticket_id",
+              "text": "Ticket",
+              "type": "string"
+            },
+            {
+              "selector": "source",
+              "text": "Source",
+              "type": "string"
+            },
+            {
+              "selector": "store_id",
+              "text": "Store",
+              "type": "string"
+            },
+            {
+              "selector": "controller_id",
+              "text": "Controller",
+              "type": "string"
+            },
+            {
+              "selector": "code",
+              "text": "Root cause",
+              "type": "string"
+            },
+            {
+              "selector": "required_parts",
+              "text": "Spare parts to bring",
+              "type": "string"
+            },
+            {
+              "selector": "wizard_attempts",
+              "text": "Wizard attempts",
+              "type": "number"
+            },
+            {
+              "selector": "created_at",
+              "text": "Created",
+              "type": "timestamp"
+            },
+            {
+              "selector": "note",
+              "text": "Note",
+              "type": "string"
+            }
+          ],
+          "filters": []
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "filterable": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Status"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "basic"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "HEALTHY": {
+                        "color": "green",
+                        "index": 0,
+                        "text": "Healthy"
+                      },
+                      "UNKNOWN": {
+                        "color": "#8e8e8e",
+                        "index": 1,
+                        "text": "Unknown"
+                      },
+                      "ACTION_REQUIRED": {
+                        "color": "red",
+                        "index": 2,
+                        "text": "Store can self-fix"
+                      },
+                      "ESCALATED": {
+                        "color": "orange",
+                        "index": 3,
+                        "text": "Technician dispatched"
+                      },
+                      "SERVICE_REQUIRED": {
+                        "color": "orange",
+                        "index": 4,
+                        "text": "Technician needed"
+                      },
+                      "OFFLINE": {
+                        "color": "dark-red",
+                        "index": 5,
+                        "text": "Offline"
+                      },
+                      "OPEN": {
+                        "color": "red",
+                        "index": 6
+                      },
+                      "RESOLVED": {
+                        "color": "green",
+                        "index": 7
+                      },
+                      "CLOSED": {
+                        "color": "green",
+                        "index": 8
+                      },
+                      "SELF_RESOLVED": {
+                        "color": "green",
+                        "index": 9,
+                        "text": "Self-resolved (trip avoided)"
+                      },
+                      "RESOLVED_BY_SERVICE": {
+                        "color": "blue",
+                        "index": 10,
+                        "text": "Resolved by service"
+                      },
+                      "SUPERSEDED": {
+                        "color": "#8e8e8e",
+                        "index": 11
+                      },
+                      "AUTO": {
+                        "color": "purple",
+                        "index": 12,
+                        "text": "Auto (rule engine)"
+                      },
+                      "STORE_MANAGER": {
+                        "color": "blue",
+                        "index": 13,
+                        "text": "Store manager"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Source"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "basic"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "HEALTHY": {
+                        "color": "green",
+                        "index": 0,
+                        "text": "Healthy"
+                      },
+                      "UNKNOWN": {
+                        "color": "#8e8e8e",
+                        "index": 1,
+                        "text": "Unknown"
+                      },
+                      "ACTION_REQUIRED": {
+                        "color": "red",
+                        "index": 2,
+                        "text": "Store can self-fix"
+                      },
+                      "ESCALATED": {
+                        "color": "orange",
+                        "index": 3,
+                        "text": "Technician dispatched"
+                      },
+                      "SERVICE_REQUIRED": {
+                        "color": "orange",
+                        "index": 4,
+                        "text": "Technician needed"
+                      },
+                      "OFFLINE": {
+                        "color": "dark-red",
+                        "index": 5,
+                        "text": "Offline"
+                      },
+                      "OPEN": {
+                        "color": "red",
+                        "index": 6
+                      },
+                      "RESOLVED": {
+                        "color": "green",
+                        "index": 7
+                      },
+                      "CLOSED": {
+                        "color": "green",
+                        "index": 8
+                      },
+                      "SELF_RESOLVED": {
+                        "color": "green",
+                        "index": 9,
+                        "text": "Self-resolved (trip avoided)"
+                      },
+                      "RESOLVED_BY_SERVICE": {
+                        "color": "blue",
+                        "index": 10,
+                        "text": "Resolved by service"
+                      },
+                      "SUPERSEDED": {
+                        "color": "#8e8e8e",
+                        "index": 11
+                      },
+                      "AUTO": {
+                        "color": "purple",
+                        "index": 12,
+                        "text": "Auto (rule engine)"
+                      },
+                      "STORE_MANAGER": {
+                        "color": "blue",
+                        "index": 13,
+                        "text": "Store manager"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "indexByName": {
+              "Status": 0,
+              "Ticket": 1,
+              "Source": 2,
+              "Store": 3,
+              "Controller": 4,
+              "Root cause": 5,
+              "Spare parts to bring": 6,
+              "Wizard attempts": 7,
+              "Created": 8,
+              "Note": 9
+            }
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        }
+      }
+    },
+    {
+      "id": 14,
+      "type": "table",
+      "title": "Issue history",
+      "gridPos": {
+        "x": 0,
+        "y": 41,
+        "w": 24,
+        "h": 8
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "rocateq-api"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "rocateq-api"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "parser": "backend",
+          "url": "${api}/api/v1/ops/issues",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [
+            {
+              "selector": "resolution",
+              "text": "Resolution",
+              "type": "string"
+            },
+            {
+              "selector": "state",
+              "text": "State",
+              "type": "string"
+            },
+            {
+              "selector": "issue_id",
+              "text": "Issue",
+              "type": "string"
+            },
+            {
+              "selector": "store_id",
+              "text": "Store",
+              "type": "string"
+            },
+            {
+              "selector": "code",
+              "text": "Root cause",
+              "type": "string"
+            },
+            {
+              "selector": "opened_at",
+              "text": "Opened",
+              "type": "timestamp"
+            },
+            {
+              "selector": "resolved_at",
+              "text": "Resolved",
+              "type": "timestamp"
+            },
+            {
+              "selector": "duration_min",
+              "text": "Duration (min)",
+              "type": "number"
+            },
+            {
+              "selector": "verify_attempts",
+              "text": "Verify attempts",
+              "type": "number"
+            }
+          ],
+          "filters": []
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "filterable": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Resolution"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "basic"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "HEALTHY": {
+                        "color": "green",
+                        "index": 0,
+                        "text": "Healthy"
+                      },
+                      "UNKNOWN": {
+                        "color": "#8e8e8e",
+                        "index": 1,
+                        "text": "Unknown"
+                      },
+                      "ACTION_REQUIRED": {
+                        "color": "red",
+                        "index": 2,
+                        "text": "Store can self-fix"
+                      },
+                      "ESCALATED": {
+                        "color": "orange",
+                        "index": 3,
+                        "text": "Technician dispatched"
+                      },
+                      "SERVICE_REQUIRED": {
+                        "color": "orange",
+                        "index": 4,
+                        "text": "Technician needed"
+                      },
+                      "OFFLINE": {
+                        "color": "dark-red",
+                        "index": 5,
+                        "text": "Offline"
+                      },
+                      "OPEN": {
+                        "color": "red",
+                        "index": 6
+                      },
+                      "RESOLVED": {
+                        "color": "green",
+                        "index": 7
+                      },
+                      "CLOSED": {
+                        "color": "green",
+                        "index": 8
+                      },
+                      "SELF_RESOLVED": {
+                        "color": "green",
+                        "index": 9,
+                        "text": "Self-resolved (trip avoided)"
+                      },
+                      "RESOLVED_BY_SERVICE": {
+                        "color": "blue",
+                        "index": 10,
+                        "text": "Resolved by service"
+                      },
+                      "SUPERSEDED": {
+                        "color": "#8e8e8e",
+                        "index": 11
+                      },
+                      "AUTO": {
+                        "color": "purple",
+                        "index": 12,
+                        "text": "Auto (rule engine)"
+                      },
+                      "STORE_MANAGER": {
+                        "color": "blue",
+                        "index": 13,
+                        "text": "Store manager"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "State"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "basic"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "HEALTHY": {
+                        "color": "green",
+                        "index": 0,
+                        "text": "Healthy"
+                      },
+                      "UNKNOWN": {
+                        "color": "#8e8e8e",
+                        "index": 1,
+                        "text": "Unknown"
+                      },
+                      "ACTION_REQUIRED": {
+                        "color": "red",
+                        "index": 2,
+                        "text": "Store can self-fix"
+                      },
+                      "ESCALATED": {
+                        "color": "orange",
+                        "index": 3,
+                        "text": "Technician dispatched"
+                      },
+                      "SERVICE_REQUIRED": {
+                        "color": "orange",
+                        "index": 4,
+                        "text": "Technician needed"
+                      },
+                      "OFFLINE": {
+                        "color": "dark-red",
+                        "index": 5,
+                        "text": "Offline"
+                      },
+                      "OPEN": {
+                        "color": "red",
+                        "index": 6
+                      },
+                      "RESOLVED": {
+                        "color": "green",
+                        "index": 7
+                      },
+                      "CLOSED": {
+                        "color": "green",
+                        "index": 8
+                      },
+                      "SELF_RESOLVED": {
+                        "color": "green",
+                        "index": 9,
+                        "text": "Self-resolved (trip avoided)"
+                      },
+                      "RESOLVED_BY_SERVICE": {
+                        "color": "blue",
+                        "index": 10,
+                        "text": "Resolved by service"
+                      },
+                      "SUPERSEDED": {
+                        "color": "#8e8e8e",
+                        "index": 11
+                      },
+                      "AUTO": {
+                        "color": "purple",
+                        "index": 12,
+                        "text": "Auto (rule engine)"
+                      },
+                      "STORE_MANAGER": {
+                        "color": "blue",
+                        "index": 13,
+                        "text": "Store manager"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "indexByName": {
+              "Resolution": 0,
+              "State": 1,
+              "Issue": 2,
+              "Store": 3,
+              "Root cause": 4,
+              "Opened": 5,
+              "Resolved": 6,
+              "Duration (min)": 7,
+              "Verify attempts": 8
+            }
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        }
+      }
+    }
+  ]
+}
