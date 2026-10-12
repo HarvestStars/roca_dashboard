@@ -1,0 +1,5 @@
+[
+  { "engineer_id": "ENG-MARK-01",   "name": "Mark de Boer",   "email": "mark.deboer@rocateq.example",   "home_base": "Rotterdam" },
+  { "engineer_id": "ENG-SOPHIE-02", "name": "Sophie Laurent", "email": "sophie.laurent@rocateq.example", "home_base": "Rotterdam" },
+  { "engineer_id": "ENG-JONAS-03",  "name": "Jonas Weber",    "email": "jonas.weber@rocateq.example",   "home_base": "Rotterdam" }
+]

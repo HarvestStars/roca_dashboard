@@ -8,6 +8,10 @@ import (
 
 var languageNames = map[string]string{"en": "English", "nl": "Dutch", "fr": "French", "de": "German"}
 
+// verifyButton is the label of the store UI's verify button (web/store/app.js),
+// so the guide refers to the button the manager actually sees.
+var verifyButton = map[string]string{"en": "Verify solution", "nl": "Opnieuw testen", "fr": "Vérifier", "de": "Lösung prüfen"}
+
 // BuildGuidePrompt renders the system/user prompt of spec §2.5. Shared by all
 // remote providers so the output contract stays identical.
 func BuildGuidePrompt(req GuideRequest) (system, user string) {
@@ -19,7 +23,11 @@ func BuildGuidePrompt(req GuideRequest) (system, user string) {
 	if lang == "" {
 		lang = "English"
 	}
-	task := "Output a concise, friendly, 3-step action guide for the store manager to fix the problem themselves, ending with pressing the 'Verify' button."
+	button := verifyButton[req.Language]
+	if button == "" {
+		button = verifyButton["en"]
+	}
+	task := fmt.Sprintf("Output a concise, friendly, 3-step action guide for the store manager to fix the problem themselves, ending with pressing the button labelled '%s'.", button)
 	if !req.SelfFixable {
 		task = "This is a hardware fault the store must NOT try to repair. Output 2 short steps reassuring the manager that a Rocateq technician has been notified with the right spare part, and what to do meanwhile."
 	}

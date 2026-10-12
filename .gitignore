@@ -1,3 +1,11 @@
 /logs/
 /bin/
 *.exe
+
+# secrets: never commit
+.env
+.env.*
+!.env.example
+
+# uploaded receipt photos (may contain personal data)
+/uploads/

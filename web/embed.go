@@ -1,4 +1,5 @@
-// Package web embeds the static store-manager UI into the binary.
+// Package web embeds the static UIs into the binary:
+// store/ (store manager), engineer/ (field engineer PWA), backoffice/.
 package web
 
 import (
@@ -6,11 +7,8 @@ import (
 	"io/fs"
 )
 
-//go:embed store
+//go:embed store engineer backoffice
 var files embed.FS
 
-// Store returns the store-manager UI rooted at web/store.
-func Store() fs.FS {
-	sub, _ := fs.Sub(files, "store")
-	return sub
-}
+// FS returns the root containing one directory per UI.
+func FS() fs.FS { return files }

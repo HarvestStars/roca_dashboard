@@ -14,7 +14,7 @@
 | 接入层 (Ingestion) | 进程内存 Broker，MQTT 风格 topic + `+`/`#` 通配 | EMQX |
 | 核心诊断引擎 | Go：规则引擎 + 每控制器状态机 | 同左（代码可直接沿用） |
 | 时序/状态持久化 | `logs/` 目录下 JSONL 追加写，启动时回放 | PostgreSQL + TimescaleDB |
-| LLM 多语言指引 | `Provider` 接口；内置 `template` 实现（en/nl/fr/de 离线模板），OpenAI / Anthropic 留桩 | GPT-4o / Claude / Gemini |
+| LLM 多语言指引 | `Provider` 接口；有 `OPENAI_API_KEY` 时实时调用 OpenAI（默认 `gpt-5.4-mini`），否则用内置 `template`（en/nl/fr/de 离线模板）；Anthropic 留桩 | GPT / Claude / Gemini |
 | B 端店长界面 | Go 内嵌的静态单页（无构建步骤） | PWA |
 | 内部运营大盘 | Grafana 12 + Infinity 插件，直接读 Go 的 JSON API | Grafana + TimescaleDB SQL |
 
@@ -68,7 +68,7 @@ flowchart LR
 
 ## 3. 目录与模块划分
 
-```
+```text
 cmd/rocadash/            main：装配 + 生命周期（signal 优雅退出）
 internal/
   config/                flag > 环境变量 > 默认值
@@ -125,6 +125,7 @@ stateDiagram-v2
 ```
 
 要点：
+
 - **同一根因持续命中不重复开单**；根因变了 → 旧 Issue `SUPERSEDED` + 新 Issue。
 - **SUPERSEDED 不关工单**：例如天线坏了期间盒子又掉线，掉线只是把天线故障“盖住”了；恢复在线后天线故障重新出现，会**复用同一张未关闭的工单**而不是重复派单。
 - 门店整体状态 = 其所有控制器中**最严重**的状态：`OFFLINE > SERVICE_REQUIRED > ESCALATED > ACTION_REQUIRED > UNKNOWN > HEALTHY`。
@@ -175,6 +176,7 @@ sequenceDiagram
 | `device_events.jsonl` | 设备 events topic 原文 | 收到 event | 仅审计，不回放 |
 
 设计说明：
+
 - **事件溯源的简化版**：每行都是实体全量快照，回放就是“后写覆盖先写”，不需要合并逻辑。坏行（崩溃时写一半）被跳过。
 - 重启后：未关闭的 Issue 重新挂回控制器；ID 序号从日志中最大值续上，不会重复。
 - 接口在 `internal/storage`：`TelemetryStore{Append, Query, Close}`、`Journal{IssueEvent, Ticket, DeviceEvent, Replay, Close}`。上 TimescaleDB 时实现这两个接口即可；`Query` 届时直接下推 SQL `time_bucket`。
@@ -191,11 +193,13 @@ type Provider interface {
 }
 ```
 
-- `GuideService` = Provider + **缓存**（key 为整个 `GuideRequest`：故障码、部件、位置、语言…）+ **超时** + **兜底**（远程失败自动退回 `template`，兜底结果不缓存，远程恢复后自动切回）。
+- `GuideService` = Provider + **缓存**（key 为整个 `GuideRequest`：故障码、部件、位置、语言…）+ **请求去重** + **超时** + **兜底**。
+- 远程模型需要 2–3 秒，而店长页每 3 秒轮询一次：同一指引第一次被请求时在后台生成，生成好之前先返回模板指引（页面不卡），之后切换为 LLM 版本并缓存。失败后 1 分钟内不重试，期间继续用模板。
 - 同一故障在同一门店的指引基本不变，缓存命中率接近 100%，这是 Spec §4.3 中 LLM 成本能压到 €10–25/月的前提。
 - `prompt.go`：`BuildGuidePrompt`（Spec §2.5 的 prompt，硬件故障时切换为“别动，工程师已出发”的 2 步话术）+ `ParseGuideJSON`（校验、容忍 ```json 代码块）。所有远程 Provider 共用，保证输出契约一致。
-- `remote.go`：`OpenAI` / `Anthropic` 已有结构体与配置，**HTTP 调用处标了 TODO**，拿到 API key 后补约 30 行代码即可。
-- 选择方式：`LLM_PROVIDER=template|openai|anthropic`，`LLM_API_KEY`，`LLM_MODEL`，`LLM_BASE_URL`。
+- `openai.go`：纯 `net/http` 的 Chat Completions 客户端（JSON 模式），已接通；同一客户端也用于需求二的发票识别。`remote.go`：Anthropic 留桩。
+- prompt 会传入店长页上验证按钮的本地化文字（如荷兰语 "Opnieuw testen"），保证指引里提到的按钮名和界面一致。
+- 选择方式：`LLM_PROVIDER=auto|template|openai|anthropic`（默认 `auto`：有 key 用 openai），`OPENAI_API_KEY`（从根目录 `.env` 读取，已 gitignore），`LLM_MODEL`，`LLM_BASE_URL`。
 
 ---
 
@@ -230,16 +234,19 @@ type Provider interface {
 ## 8. 前端
 
 **B 端店长页**（`web/store/`，访问 `http://localhost:8080/store/`）
+
 - 大红绿灯 + 一句话状态 → 3 步图文向导（可逐步勾选）→ “重新验证” / “请求支持” → 工单卡片（显示工程师会带的备件）→ 设备列表。
 - 界面文案 en/nl/fr/de 四语（右上角可切换，默认按门店语言）；向导内容来自 LLM 模块。
 - 纯 HTML/JS，每 3 秒轮询，无构建工具链，`go:embed` 进二进制，单文件部署。
 
 **Grafana 运营大盘**（`http://localhost:3000`，匿名 Admin，首页即大盘）
+
 - 第 1 行 KPI：健康门店 / 店长可自修 / 已派工程师 / 离线 / 避免出差次数 / 估算节省 €
 - 门店地图（按状态着色）+ 门店状态表
 - 供电电压曲线（10V 红线）+ 地感线圈阻抗曲线（对数轴，10kΩ 红线）
 - 未关闭 Issue 表 + 根因分布 + 工单表 + Issue 历史
 - 版本固定：Grafana `12.2.0` + Infinity `3.11.1`（Infinity 4.x 与 Grafana 11 不兼容，已踩坑）。
+- 地图底图用 Esri Dark Gray（XYZ 瓦片，免 key）。Grafana 默认的 CARTO 底图已要求 API key，不配会显示 “API KEY REQUIRED” 占位瓦片。
 
 ---
 
@@ -256,8 +263,9 @@ type Provider interface {
 | `-verify-timeout` | `VERIFY_TIMEOUT` | `3s` | |
 | `-retention` | `TELEMETRY_RETENTION` | `6h` | 内存时序窗口 |
 | `-trip-cost` | `AVOIDED_TRIP_COST_EUR` | `2000` | |
-| `-llm` | `LLM_PROVIDER` | `template` | |
-| — | `LLM_API_KEY` / `LLM_MODEL` / `LLM_BASE_URL` | | |
+| `-llm` | `LLM_PROVIDER` | `auto` | 有 key 用 openai |
+| `-llm-model` | `LLM_MODEL` | `gpt-5.4-mini` | |
+| — | `OPENAI_API_KEY`（或 `LLM_API_KEY`）/ `LLM_BASE_URL` | | 可放在 `.env` |
 
 ---
 
@@ -276,7 +284,7 @@ docker compose up -d
 - 运营大盘：<http://localhost:3000>（打开即大盘；全屏展示加 `?kiosk`）
 - 测试：`go test ./...`
 
-重置演示：停服务 → 删除 `logs/` → 把 `data/devices/` 恢复成初始状态（建议先 commit，之后 `git checkout data/devices`）。
+重置演示：`powershell -ExecutionPolicy Bypass -File tools/reset_demo.ps1`（停服务 → 删除 `logs/`、`uploads/` → 从 git 恢复 `data/devices/`）。
 
 ### 10.2 预置场景
 
@@ -315,10 +323,10 @@ docker compose up -d
 | 存储 | JSONL + 内存窗口 | TimescaleDB 实现 `TelemetryStore`（hypertable + `time_bucket`），Postgres 实现 `Journal`；Grafana 改用 PG datasource |
 | 多实例 | 状态在单进程内存 | 状态外置（PG）或按 store_id 分片订阅 |
 | 鉴权 | 无（店长页、ops API 均开放） | 店长端门店级 token / magic link；ops API 内网 + Grafana SSO |
-| LLM | 模板 | 补 `remote.go` 的 HTTP 调用；建议在 Issue 创建时预生成并持久化指引 |
+| LLM | 已接 OpenAI，内存缓存 | 建议在 Issue 创建时预生成并持久化指引（重启后不用重新生成） |
 | 规则 | 硬编码阈值 | 阈值按控制器型号配置化；规则命中写入 Issue 便于回溯 |
 | 工单 | 只记录、不通知 | 对接邮件/Slack/现有工单系统；接需求二的出差流程 |
-| 地图底图 | 依赖外网 CARTO 瓦片，离线环境只显示点位 | 内网瓦片服务或换表格展示 |
+| 地图底图 | 用 Esri Dark Gray Canvas 公共瓦片（免 key）；离线环境只显示点位。注意：Grafana 默认的 CARTO 底图现在需要 API key，否则每块瓦片都是 “API KEY REQUIRED” 占位图 | 内网瓦片服务或付费瓦片 key |
 
 ## 12. 请审核人重点关注
 

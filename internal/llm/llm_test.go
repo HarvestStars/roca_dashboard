@@ -28,11 +28,64 @@ func TestTemplateFallsBackToEnglish(t *testing.T) {
 	}
 }
 
-func TestServiceFallsBackWhenProviderNotWired(t *testing.T) {
-	s := NewGuideService(&OpenAI{APIKey: "x"}, time.Second, slog.New(slog.NewTextHandler(io.Discard, nil)))
-	g := s.Guide(context.Background(), GuideRequest{Language: "fr", FaultCode: "POWER_SUPPLY_ABNORMAL"})
-	if g.Source != "template" || g.Language != "fr" {
+type fakeProvider struct {
+	calls chan struct{}
+	err   error
+}
+
+func (f *fakeProvider) Name() string { return "fake" }
+func (f *fakeProvider) GenerateGuide(context.Context, GuideRequest) (*Guide, error) {
+	f.calls <- struct{}{}
+	if f.err != nil {
+		return nil, f.err
+	}
+	return &Guide{Title: "from llm", Steps: []GuideStep{{StepNumber: 1}}}, nil
+}
+
+func TestServiceServesTemplateUntilLLMReady(t *testing.T) {
+	fp := &fakeProvider{calls: make(chan struct{}, 10)}
+	s := NewGuideService(fp, time.Second, slog.New(slog.NewTextHandler(io.Discard, nil)))
+	req := GuideRequest{Language: "fr", FaultCode: "POWER_SUPPLY_ABNORMAL"}
+	if g := s.Guide(context.Background(), req); g.Source != "template" || g.Language != "fr" {
+		t.Fatalf("first call should be template, got %+v", g)
+	}
+	<-fp.calls
+	deadline := time.Now().Add(time.Second)
+	for time.Now().Before(deadline) {
+		if g := s.Guide(context.Background(), req); g.Source == "fake" {
+			if len(fp.calls) != 0 {
+				t.Fatalf("provider called more than once")
+			}
+			return
+		}
+		time.Sleep(5 * time.Millisecond)
+	}
+	t.Fatal("llm guide never served")
+}
+
+func TestServiceKeepsTemplateWhenProviderFails(t *testing.T) {
+	fp := &fakeProvider{calls: make(chan struct{}, 10), err: ErrNotWired}
+	s := NewGuideService(fp, time.Second, slog.New(slog.NewTextHandler(io.Discard, nil)))
+	req := GuideRequest{Language: "de", FaultCode: "GATEWAY_OFFLINE"}
+	s.Guide(context.Background(), req)
+	<-fp.calls
+	time.Sleep(20 * time.Millisecond)
+	if g := s.Guide(context.Background(), req); g.Source != "template" {
 		t.Fatalf("got %+v", g)
+	}
+	if len(fp.calls) != 0 {
+		t.Fatal("failed provider retried immediately")
+	}
+}
+
+func TestParseReceiptJSONNormalises(t *testing.T) {
+	r, err := ParseReceiptJSON(`{"merchant_name":"X","transaction_date":"2026-10-12","currency":"eur","total_amount":12.5,"expense_category":"parking","travel_segment":{}}`)
+	if err != nil || r.Currency != "EUR" || r.ExpenseCategory != "OTHER" || r.TravelSegment != nil || r.FlagManualReview {
+		t.Fatalf("r=%+v err=%v", r, err)
+	}
+	r, _ = ParseReceiptJSON(`{"merchant_name":"X","currency":"EUR","total_amount":0}`)
+	if !r.FlagManualReview {
+		t.Fatal("missing total/date must be flagged")
 	}
 }
 

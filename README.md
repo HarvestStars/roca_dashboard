@@ -1,14 +1,23 @@
-# Rocateq Remote Diagnostics — Dashboard Demo
+# Rocateq Field Operations — Demo
 
-A runnable demo of the remote-diagnostics platform described in [docs/technical_architecture_spec.md](docs/technical_architecture_spec.md) §2.
-Design notes for reviewers: [docs/dashboard_demo_design.md](docs/dashboard_demo_design.md).
+Runnable demo of both requirements in [docs/technical_architecture_spec.md](docs/technical_architecture_spec.md):
+
+| | Requirement | UI | Design notes |
+| :-- | :-- | :-- | :-- |
+| 1 | Remote diagnostics & store self-help | `/store/` + Grafana | [docs/dashboard_demo_design.md](docs/dashboard_demo_design.md) |
+| 2 | Trips, timesheets & AI receipt parsing | `/engineer/` (phone) + `/backoffice/` + Grafana | [docs/erp_demo_design.md](docs/erp_demo_design.md) |
 
 ```bash
-go run ./cmd/rocadash      # backend + device simulator  -> http://localhost:8080/store/
+cp .env.example .env       # put OPENAI_API_KEY in .env (never committed)
+go run ./cmd/rocadash      # backend + device simulator  -> http://localhost:8080
 docker compose up -d       # Grafana ops dashboard       -> http://localhost:3000
 go test ./...
 ```
 
 - Simulated controllers: `data/devices/*.json` — edit a file to change the "hardware" state.
-- Persistence: append-only JSONL under `logs/` (delete it to reset history).
-- LLM: `LLM_PROVIDER=template` (default, offline). `openai` / `anthropic` are stubbed in `internal/llm/remote.go`.
+- Sample receipts: `data/sample_receipts/` (regenerate: `python tools/receipts/gen_receipts.py`).
+- Persistence: append-only JSONL under `logs/`, receipt photos under `uploads/`.
+- Phone demo over HTTPS: `go run ./cmd/rocadash -tunnel` (or `TUNNEL=true` in .env; see docs/erp_demo_design.md §13).
+- Reset: `powershell -ExecutionPolicy Bypass -File tools/reset_demo.ps1` (add `-ErpOnly` to keep diagnostics tickets); bash: `sh tools/reset_demo.sh [--erp-only]`.
+- LLM: OpenAI when `OPENAI_API_KEY` is set (store guides + receipt vision); otherwise offline templates / manual entry.
+- Grafana dashboard source: `python tools/grafana/gen_dashboard.py deploy/grafana/dashboards/rocateq-ops.json`.

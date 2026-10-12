@@ -1,5 +1,6 @@
 // Package api exposes the REST surface: the store-manager wizard API
-// (spec §2.6) and flat JSON feeds for the Grafana operations dashboard.
+// (spec §2.6), the field-engineer / back-office ERP API (spec §3.4) and flat
+// JSON feeds for the Grafana operations dashboard.
 package api
 
 import (
@@ -11,28 +12,61 @@ import (
 	"time"
 
 	"github.com/harveststars/roca_dashboard/internal/diagnostics"
+	"github.com/harveststars/roca_dashboard/internal/erp"
 	"github.com/harveststars/roca_dashboard/internal/llm"
 	"github.com/harveststars/roca_dashboard/internal/storage"
 )
 
 type Server struct {
-	engine *diagnostics.Engine
-	guides *llm.GuideService
-	tel    storage.TelemetryStore
-	log    *slog.Logger
+	engine  *diagnostics.Engine
+	guides  *llm.GuideService
+	tel     storage.TelemetryStore
+	erp     *erp.Service
+	samples string
+	log     *slog.Logger
 }
 
-func New(engine *diagnostics.Engine, guides *llm.GuideService, tel storage.TelemetryStore, web fs.FS, log *slog.Logger) http.Handler {
-	s := &Server{engine: engine, guides: guides, tel: tel, log: log}
+// Deps are the modules the HTTP layer is wired to.
+type Deps struct {
+	Engine            *diagnostics.Engine
+	Guides            *llm.GuideService
+	Telemetry         storage.TelemetryStore
+	ERP               *erp.Service
+	SampleReceiptsDir string
+	Web               fs.FS // contains store/, engineer/, backoffice/
+	Log               *slog.Logger
+}
+
+func New(d Deps) http.Handler {
+	s := &Server{engine: d.Engine, guides: d.Guides, tel: d.Telemetry, erp: d.ERP, samples: d.SampleReceiptsDir, log: d.Log}
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) { writeJSON(w, 200, map[string]string{"status": "ok"}) })
 
-	// Store manager (B端)
+	// Requirement 1 — store manager (B端)
 	mux.HandleFunc("GET /api/v1/stores", s.listStores)
 	mux.HandleFunc("GET /api/v1/stores/{store_id}/diagnostics/wizard", s.getWizard)
 	mux.HandleFunc("POST /api/v1/stores/{store_id}/diagnostics/wizard/verify", s.postVerify)
 	mux.HandleFunc("POST /api/v1/stores/{store_id}/tickets/escalate", s.postEscalate)
+
+	// Requirement 2 — field engineers & back office
+	mux.HandleFunc("GET /api/v1/engineers", s.listEngineers)
+	mux.HandleFunc("GET /api/v1/dispatch/queue", s.dispatchQueue)
+	mux.HandleFunc("POST /api/v1/trips", s.postDispatch)
+	mux.HandleFunc("GET /api/v1/trips", s.listTrips)
+	mux.HandleFunc("GET /api/v1/trips/{trip_id}", s.getTrip)
+	mux.HandleFunc("GET /api/v1/trips/{trip_id}/summary", s.getTripSummary)
+	mux.HandleFunc("POST /api/v1/trips/{trip_id}/submit", s.postSubmit)
+	mux.HandleFunc("POST /api/v1/trips/{trip_id}/approve", s.postApprove)
+	mux.HandleFunc("POST /api/v1/engineers/timesheets/punch", s.postPunch)
+	mux.HandleFunc("POST /api/v1/trips/{trip_id}/expenses", s.postExpense)
+	mux.HandleFunc("POST /api/v1/trips/{trip_id}/expenses/sample", s.postSampleExpense)
+	mux.HandleFunc("GET /api/v1/expenses/{expense_id}/image", s.getExpenseImage)
+	mux.HandleFunc("POST /api/v1/expenses/{expense_id}/confirm", s.postConfirmExpense)
+	mux.HandleFunc("POST /api/v1/expenses/{expense_id}/retry", s.postRetryExpense)
+	mux.HandleFunc("GET /api/v1/erp/outbox", s.getOutbox)
+	mux.HandleFunc("GET /api/v1/erp/sample-receipts", s.listSampleReceipts)
+	mux.HandleFunc("GET /api/v1/erp/sample-receipts/{name}", s.getSampleReceipt)
 
 	// Operations dashboard feeds (Grafana Infinity datasource)
 	mux.HandleFunc("GET /api/v1/ops/summary", s.opsSummary)
@@ -41,12 +75,18 @@ func New(engine *diagnostics.Engine, guides *llm.GuideService, tel storage.Telem
 	mux.HandleFunc("GET /api/v1/ops/tickets", s.opsTickets)
 	mux.HandleFunc("GET /api/v1/ops/root-causes", s.opsRootCauses)
 	mux.HandleFunc("GET /api/v1/ops/telemetry", s.opsTelemetry)
+	mux.HandleFunc("GET /api/v1/ops/erp/summary", s.opsERPSummary)
+	mux.HandleFunc("GET /api/v1/ops/erp/trips", s.opsERPTrips)
+	mux.HandleFunc("GET /api/v1/ops/erp/expense-categories", s.opsERPCategories)
 
-	// Static store UI
-	mux.Handle("GET /store/", http.StripPrefix("/store/", http.FileServerFS(web)))
+	// Static UIs
+	for _, app := range []string{"store", "engineer", "backoffice"} {
+		sub, _ := fs.Sub(d.Web, app)
+		mux.Handle("GET /"+app+"/", http.StripPrefix("/"+app+"/", http.FileServerFS(sub)))
+	}
 	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) { http.Redirect(w, r, "/store/", http.StatusFound) })
 
-	return logRequests(log, cors(mux))
+	return logRequests(d.Log, cors(mux))
 }
 
 func writeJSON(w http.ResponseWriter, code int, v any) {
@@ -57,8 +97,13 @@ func writeJSON(w http.ResponseWriter, code int, v any) {
 
 func writeErr(w http.ResponseWriter, err error) {
 	code := http.StatusInternalServerError
-	if errors.Is(err, diagnostics.ErrNotFound) {
+	switch {
+	case errors.Is(err, diagnostics.ErrNotFound), errors.Is(err, erp.ErrNotFound):
 		code = http.StatusNotFound
+	case errors.Is(err, erp.ErrBadRequest):
+		code = http.StatusBadRequest
+	case errors.Is(err, erp.ErrInvalidState):
+		code = http.StatusConflict
 	}
 	writeJSON(w, code, map[string]string{"error": err.Error()})
 }

@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rocateq Back Office</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="logo">R</span> Rocateq <span class="muted">Back Office · Trips &amp; Expenses</span></div>
+    <nav class="links"><a href="/store/" target="_blank">Store app ↗</a><a href="/engineer/" target="_blank">Field app ↗</a><a href="http://localhost:3000" target="_blank">Ops dashboard ↗</a></nav>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>Dispatch queue <span class="count" id="q-count"></span></h2>
+      <p class="muted small">Qualified tickets from remote diagnostics that need a site visit. Only these become trips.</p>
+      <table>
+        <thead><tr><th>Ticket</th><th>Store</th><th>Fault</th><th>Spare parts</th><th>Source</th><th>Wizard tries</th><th>Created</th><th>Assign to</th><th></th></tr></thead>
+        <tbody id="queue"></tbody>
+      </table>
+    </section>
+
+    <section class="card">
+      <h2>Trips</h2>
+      <table>
+        <thead><tr><th>Trip</th><th>Status</th><th>Engineer</th><th>Store</th><th class="num">On site (h)</th><th class="num">Expenses</th><th class="num">Receipts</th><th class="num">To review</th><th class="num">GPS warn.</th></tr></thead>
+        <tbody id="trips"></tbody>
+      </table>
+    </section>
+
+    <section class="card hidden" id="detail">
+      <div class="detail-head">
+        <div>
+          <div class="muted small" id="d-id"></div>
+          <h2 id="d-title"></h2>
+          <div class="muted" id="d-sub"></div>
+        </div>
+        <div class="approve-box">
+          <span class="pill" id="d-status"></span>
+          <button class="btn primary" id="approve">Approve</button>
+        </div>
+      </div>
+
+      <div class="kpis">
+        <div><span>On-site hours</span><strong id="k-hours"></strong><small>check-in → check-out</small></div>
+        <div><span>Expenses</span><strong id="k-eur"></strong><small id="k-vat"></small></div>
+        <div><span>Receipts</span><strong id="k-receipts"></strong><small id="k-pending"></small></div>
+        <div><span>Receipt time envelope</span><strong id="k-env"></strong><small id="k-env-range"></small></div>
+      </div>
+      <p class="note" id="calib-note"></p>
+
+      <div class="cols">
+        <div>
+          <h3>Timesheet</h3>
+          <table class="compact"><thead><tr><th>Action</th><th>Time</th><th>GPS</th></tr></thead><tbody id="d-punches"></tbody></table>
+        </div>
+        <div>
+          <h3>By category</h3>
+          <table class="compact"><tbody id="d-cats"></tbody></table>
+        </div>
+      </div>
+
+      <h3>Receipts</h3>
+      <table>
+        <thead><tr><th></th><th>Status</th><th>Merchant</th><th>Date / time</th><th>Category</th><th class="num">Total</th><th class="num">VAT</th><th class="num">AI conf.</th><th>Notes</th></tr></thead>
+        <tbody id="d-expenses"></tbody>
+      </table>
+    </section>
+
+    <section class="card">
+      <h2>Outbox <span class="muted small">(demo stand-in for e-mail / n8n)</span></h2>
+      <div id="outbox"></div>
+    </section>
+  </main>
+  <div class="lightbox hidden" id="lightbox"><img alt="receipt"></div>
+  <script src="app.js"></script>
+</body>
+</html>

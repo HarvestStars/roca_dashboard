@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="manifest.webmanifest">
+  <title>Rocateq Field App</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="logo">R</span> Field App</div>
+    <select id="engineer" aria-label="Engineer"></select>
+  </header>
+
+  <main id="list-view">
+    <h2 class="section-title">My trips</h2>
+    <div id="trips"></div>
+    <p class="empty hidden" id="no-trips">No trips assigned. New dispatches appear here automatically.</p>
+  </main>
+
+  <main id="trip-view" class="hidden">
+    <button class="back" id="back">‹ All trips</button>
+
+    <div class="banner hidden" id="reminder"></div>
+
+    <section class="card trip-head">
+      <div class="row-between">
+        <div>
+          <div class="muted small" id="t-id"></div>
+          <h1 id="t-store"></h1>
+          <div class="muted" id="t-city"></div>
+        </div>
+        <span class="pill" id="t-status"></span>
+      </div>
+      <div class="facts">
+        <div><span class="muted small">Fault</span><strong id="t-code"></strong></div>
+        <div><span class="muted small">Ticket</span><strong id="t-ticket"></strong></div>
+      </div>
+      <div class="parts" id="t-parts"></div>
+    </section>
+
+    <section class="card">
+      <h3>On-site time</h3>
+      <div class="clock" id="clock">0:00:00</div>
+      <button class="btn big" id="punch"></button>
+      <p class="muted small" id="geo-note"></p>
+      <ul class="punches" id="punches"></ul>
+    </section>
+
+    <section class="card">
+      <div class="row-between">
+        <h3>Receipts</h3>
+        <strong id="exp-total">€0.00</strong>
+      </div>
+      <div class="upload-row">
+        <label class="btn primary">📷 Take photo
+          <input type="file" accept="image/*" capture="environment" id="cam" hidden>
+        </label>
+        <label class="btn ghost">🖼 Upload
+          <input type="file" accept="image/*" id="file" hidden>
+        </label>
+        <button class="btn ghost" id="samples-btn">🧾 Sample</button>
+      </div>
+      <div class="samples hidden" id="samples"></div>
+      <div id="expenses"></div>
+    </section>
+
+    <section class="card">
+      <button class="btn big submit" id="submit">Submit hours &amp; receipts</button>
+      <p class="muted small center" id="submit-note"></p>
+    </section>
+  </main>
+
+  <div class="lightbox hidden" id="lightbox"><img alt="receipt"></div>
+  <div class="toast hidden" id="toast"></div>
+  <script src="app.js"></script>
+</body>
+</html>

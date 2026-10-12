@@ -1,0 +1,27 @@
+# HTTPS entry point for the phone demo (German server, /etc/caddy/Caddyfile).
+# Traffic: phone -> Caddy :443 -> 127.0.0.1:18080 -> SSH reverse tunnel -> laptop :8080
+# __BASICAUTH_HASH__ is replaced at install time (caddy hash-password); never commit a real hash.
+# Certificates are obtained and renewed automatically by Caddy.
+
+rocateq-demo.2-28-105-58.sslip.io {
+	encode gzip
+
+	basicauth {
+		demo __BASICAUTH_HASH__
+	}
+
+	reverse_proxy 127.0.0.1:18080
+
+	# Laptop tunnel not connected -> friendly page instead of a bare 502.
+	handle_errors {
+		@offline expression {err.status_code} in [502, 503, 504]
+		handle @offline {
+			header Content-Type "text/html; charset=utf-8"
+			respond `<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><body style="font-family:system-ui;background:#0f172a;color:#e2e8f0;display:grid;place-items:center;height:100vh;margin:0;text-align:center"><div><h1>Rocateq demo is offline</h1><p>The presenter's laptop is not connected right now.</p></div>` 503
+		}
+	}
+
+	log {
+		output file /var/log/caddy/rocateq-demo.log
+	}
+}
