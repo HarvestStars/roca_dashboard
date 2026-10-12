@@ -8,7 +8,7 @@
 # so the demo is reachable exclusively through Caddy (HTTPS + password).
 # Login: user and password are DEMO_BASIC_AUTH_USER / DEMO_BASIC_AUTH_PASSWORD in .env.
 param(
-    [string]$Server = "2.28.105.58",
+    [string]$Server = "root@2.28.105.58",
     [int]$RemotePort = 18080,
     [int]$LocalPort = 8080
 )

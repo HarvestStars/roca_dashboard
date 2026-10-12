@@ -17,7 +17,7 @@ import (
 )
 
 type Config struct {
-	Server     string // ssh destination, e.g. "2.28.105.58" or a Host alias from ~/.ssh/config
+	Server     string // ssh destination, e.g. "root@2.28.105.58" or a Host alias from ~/.ssh/config
 	RemotePort int    // bound to 127.0.0.1 on the server; Caddy proxies to it
 	LocalPort  int    // where rocadash listens
 	PublicURL  string // used for the reachability check and the log line

@@ -376,8 +376,9 @@ go run ./cmd/rocadash -tunnel     # 启动服务并同时打开隧道
 
 约 2 秒后日志出现 `tunnel up — demo reachable url=https://…/engineer/`，说明手机已经能访问。
 
-- 隧道由 `internal/tunnel` 调用系统自带的 `ssh -N -R 127.0.0.1:18080:localhost:8080 2.28.105.58` 建立：断线按退避自动重连；服务退出（Ctrl+C）时隧道一起关闭；不带 `-tunnel` 时完全不碰网络。
+- 隧道由 `internal/tunnel` 调用系统自带的 `ssh -N -R 127.0.0.1:18080:localhost:8080 root@2.28.105.58` 建立：断线按退避自动重连；服务退出（Ctrl+C）时隧道一起关闭；不带 `-tunnel` 时完全不碰网络。
 - 想默认开启，可在 `.env` 加 `TUNNEL=true`；服务器和端口可用 `-tunnel-server` / `-tunnel-port` 修改。
+- 新机器第一次使用：先把本机公钥加到服务器 `/root/.ssh/authorized_keys`（Hetzner 控制台里的 SSH Keys 只在创建服务器时注入，对已有服务器无效），并用 `ssh root@2.28.105.58` 登录一次，接受主机指纹。隧道使用 `BatchMode`，不会弹出密码或指纹确认，缺任何一项都只会在日志里反复重连。
 - 也可以不用开关，单独开隧道：`powershell -ExecutionPolicy Bypass -File tools/tunnel.ps1`（服务照常用 `go run ./cmd/rocadash` 启动）。
 - 同一时间只能有一条隧道。如果日志提示 "server port already in use"，说明另一台机器或残留的 ssh 还连着。`tools/reset_demo.ps1` 会关掉本机残留的那条（只按端口映射匹配，不会动你其他的 SSH 会话）。
 
@@ -390,8 +391,8 @@ go run ./cmd/rocadash -tunnel     # 启动服务并同时打开隧道
 - **换密码**：改 `.env` 中的 `DEMO_BASIC_AUTH_PASSWORD`，然后执行
   `grep '^DEMO_BASIC_AUTH_PASSWORD=' .env | cut -d= -f2- | tr -d '
 
-' | ssh 2.28.105.58 'read -r p; caddy hash-password --plaintext "$p" > /root/.rocateq-demo-hash'`，
+' | ssh root@2.28.105.58 'read -r p; caddy hash-password --plaintext "$p" > /root/.rocateq-demo-hash'`，
   再在服务器上用新哈希替换 `/etc/caddy/Caddyfile` 中 `demo` 后面的值，执行 `systemctl reload caddy`。
-- **临时关闭对外地址**：`ssh 2.28.105.58 systemctl stop caddy`（再次开启用 `start`）。
-- **彻底移除**：`ssh 2.28.105.58 'systemctl disable --now caddy && apt-get remove -y caddy && rm -f /root/.rocateq-demo-hash'`。
+- **临时关闭对外地址**：`ssh root@2.28.105.58 systemctl stop caddy`（再次开启用 `start`）。
+- **彻底移除**：`ssh root@2.28.105.58 'systemctl disable --now caddy && apt-get remove -y caddy && rm -f /root/.rocateq-demo-hash'`。
 - **注意**：隧道开着时，任何拿到地址和密码的人都会消耗你的 OpenAI 额度，演示结束后记得关掉隧道。

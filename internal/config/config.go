@@ -62,7 +62,7 @@ func Load() Config {
 	flag.StringVar(&c.SampleReceiptsDir, "samples", env("SAMPLE_RECEIPTS_DIR", "data/sample_receipts"), "demo receipt images")
 	flag.DurationVar(&c.ReminderDelay, "reminder-delay", envDur("REMINDER_DELAY", 20*time.Second), "delay after check-out before the receipt reminder e-mail (production: evening cron)")
 	flag.BoolVar(&c.Tunnel, "tunnel", envBool("TUNNEL", false), "open the SSH reverse tunnel so the demo is reachable at PUBLIC_BASE_URL")
-	flag.StringVar(&c.TunnelServer, "tunnel-server", env("TUNNEL_SERVER", "2.28.105.58"), "ssh destination of the HTTPS entry server")
+	flag.StringVar(&c.TunnelServer, "tunnel-server", env("TUNNEL_SERVER", "root@2.28.105.58"), "ssh destination of the HTTPS entry server (user@host or a Host alias from ~/.ssh/config)")
 	flag.IntVar(&c.TunnelRemotePort, "tunnel-port", envInt("TUNNEL_REMOTE_PORT", 18080), "port on the server's 127.0.0.1 that Caddy proxies to")
 	flag.Parse()
 
