@@ -178,7 +178,7 @@
     {
       "id": 3,
       "type": "stat",
-      "title": "Technician dispatched",
+      "title": "Technician requested",
       "gridPos": {
         "x": 8,
         "y": 0,
@@ -209,7 +209,7 @@
           "columns": [
             {
               "selector": "escalated",
-              "text": "Technician dispatched",
+              "text": "Technician requested",
               "type": "number"
             }
           ],
@@ -769,7 +769,7 @@
                       "ESCALATED": {
                         "color": "orange",
                         "index": 3,
-                        "text": "Technician dispatched"
+                        "text": "Technician requested"
                       },
                       "SERVICE_REQUIRED": {
                         "color": "orange",
@@ -1218,7 +1218,7 @@
                       "ESCALATED": {
                         "color": "orange",
                         "index": 3,
-                        "text": "Technician dispatched"
+                        "text": "Technician requested"
                       },
                       "SERVICE_REQUIRED": {
                         "color": "orange",
@@ -1506,7 +1506,7 @@
                       "ESCALATED": {
                         "color": "orange",
                         "index": 3,
-                        "text": "Technician dispatched"
+                        "text": "Technician requested"
                       },
                       "SERVICE_REQUIRED": {
                         "color": "orange",
@@ -1597,7 +1597,7 @@
                       "ESCALATED": {
                         "color": "orange",
                         "index": 3,
-                        "text": "Technician dispatched"
+                        "text": "Technician requested"
                       },
                       "SERVICE_REQUIRED": {
                         "color": "orange",
@@ -1806,7 +1806,7 @@
                       "ESCALATED": {
                         "color": "orange",
                         "index": 3,
-                        "text": "Technician dispatched"
+                        "text": "Technician requested"
                       },
                       "SERVICE_REQUIRED": {
                         "color": "orange",
@@ -1897,7 +1897,7 @@
                       "ESCALATED": {
                         "color": "orange",
                         "index": 3,
-                        "text": "Technician dispatched"
+                        "text": "Technician requested"
                       },
                       "SERVICE_REQUIRED": {
                         "color": "orange",

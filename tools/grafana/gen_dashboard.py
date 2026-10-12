@@ -34,7 +34,7 @@ STATUS_MAP = [{"type": "value", "options": {
     "HEALTHY": {"color": "green", "index": 0, "text": "Healthy"},
     "UNKNOWN": {"color": "#8e8e8e", "index": 1, "text": "Unknown"},
     "ACTION_REQUIRED": {"color": "red", "index": 2, "text": "Store can self-fix"},
-    "ESCALATED": {"color": "orange", "index": 3, "text": "Technician dispatched"},
+    "ESCALATED": {"color": "orange", "index": 3, "text": "Technician requested"},
     "SERVICE_REQUIRED": {"color": "orange", "index": 4, "text": "Technician needed"},
     "OFFLINE": {"color": "dark-red", "index": 5, "text": "Offline"},
     "OPEN": {"color": "red", "index": 6}, "RESOLVED": {"color": "green", "index": 7},
@@ -73,7 +73,7 @@ def ts(title, grid, metric, unit, extra=None, desc=""):
 panels = [
     stat("Healthy stores", "healthy", 0, "green"),
     stat("Store can self-fix", "action_required", 4, "red", desc="Open self-fixable issue; the store manager is being guided by the wizard."),
-    stat("Technician dispatched", "escalated", 8, "orange", desc="Qualified ticket open (hardware fault or manager escalation)."),
+    stat("Technician requested", "escalated", 8, "orange", desc="Qualified ticket open (hardware fault or manager escalation)."),
     stat("Offline stores", "offline", 12, "dark-red"),
     stat("Site trips avoided", "trips_avoided", 16, "blue", desc="Issues closed by the store itself (SELF_RESOLVED)."),
     stat("Est. travel cost avoided", "est_savings_eur", 20, "purple", unit="currencyEUR", desc="trips avoided x AVOIDED_TRIP_COST_EUR"),
