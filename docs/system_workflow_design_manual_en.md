@@ -113,7 +113,7 @@ flowchart TD
     Glob --> Stat["os.Stat(path): check ModTime"]
 
     Stat --> CheckMod{"ModTime changed?"}
-    CheckMod -- no --> CheckInterval{"Time since last publish >= interval_sec?<br/>(default 10 s)"}
+    CheckMod -- no --> CheckInterval{"Time since last publish >= interval_sec?<br/>(default 5 s)"}
     CheckMod -- yes --> ReadFile["os.ReadFile + unmarshal DeviceFile<br/>set changed = true"]
 
     ReadFile --> SendEvent["Publish STATE_CHANGED edge event to the broker"]
@@ -134,8 +134,9 @@ flowchart TD
    * File scanning, in-memory updates, heartbeats and answers to cloud `SELF_TEST` commands **all run serially in the same `select` loop of `Run()`**, so no mutex is needed. It is both fast and race-free.
 3. **Two publish triggers**:
    * **Report on change (no wait)**: as soon as a file is modified (`changed == true`), memory is updated and telemetry is published on the next 1-second scan.
-   * **Periodic heartbeat (keep-alive)**: when the file is unchanged, `now.Sub(d.lastPublish) >= interval` triggers a heartbeat, every 10 seconds by default.
-   * A device with `"sim": {"online": false}` stays silent, which the engine's watchdog turns into `GATEWAY_OFFLINE` after `OFFLINE_TIMEOUT` (default 30 s).
+   * **Periodic heartbeat (keep-alive)**: when the file is unchanged, `now.Sub(d.lastPublish) >= interval` triggers a heartbeat, every 5 seconds by default.
+   * **Disconnect notice (offline at once)**: when a device file changes from `"online": true` to `false` (or the file is deleted), the simulator publishes a `DISCONNECTED` event on the broker's behalf (in production EMQX emits a client-disconnected notice). The engine raises `GATEWAY_OFFLINE` immediately instead of waiting for the timeout.
+   * **Timeout fallback**: a device that never connected (e.g. `online: false` at startup) produces no disconnect event. The engine watchdog flags it offline after `OFFLINE_TIMEOUT` (default 10 s, i.e. two missed heartbeats) and shows `UNKNOWN` until then.
 
 #### 2.1.3 Sensor jitter and byte-only broker isolation
 * **Simulated sensor noise**: [`withJitter()`](../internal/simulator/simulator.go#L192) adds small random noise to voltage (±50 mV), current (±10 mA), temperature (±0.3 °C) and impedance (±1 Ω, only for impedances below 1 kΩ, so an open circuit stays open). Dashboard charts then move like real sensor readings without changing any diagnostic outcome.
@@ -177,7 +178,7 @@ All journals are append-only. Every line is a full snapshot of the entity, so re
 | **Telemetry** | `logs/telemetry/YYYY-MM-DD.jsonl` | Every valid telemetry packet | `{"received_at": "...", "telemetry": { "power": {...}, "peripherals": {...} }}` |
 | **Issue journal** | `logs/issues.jsonl` | Issue opened, verify attempt, escalated, resolved | `{"at": "...", "event": "opened\|verify_attempt\|escalated\|resolved", "issue": {...}}` |
 | **Tickets** | `logs/tickets.jsonl` | Auto-escalation of a hardware fault, manual escalation by the manager, ticket closed | `{"ticket_id": "...", "store_id": "...", "code": "...", "source": "AUTO\|STORE_MANAGER", "status": "OPEN\|CLOSED", "snapshot": [...]}` |
-| **Device events** | `logs/device_events.jsonl` | Edge events from a controller (e.g. `STATE_CHANGED` when its device file was edited) | `{"store_id": "...", "controller_id": "...", "timestamp": 0, "type": "STATE_CHANGED", "detail": "..."}` |
+| **Device events** | `logs/device_events.jsonl` | Device file edited (`STATE_CHANGED`), connection dropped (`DISCONNECTED`) | `{"store_id": "...", "controller_id": "...", "timestamp": 0, "type": "STATE_CHANGED|DISCONNECTED", "detail": "..."}` |
 
 #### 2.2.2 How Grafana really talks to the backend
 * **Common misconception**: **Grafana does not read `issues.jsonl` or the telemetry files on disk.**

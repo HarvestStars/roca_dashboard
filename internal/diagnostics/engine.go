@@ -191,10 +191,19 @@ func (e *Engine) handleEvent(msg broker.Message) {
 	if err := json.Unmarshal(msg.Payload, &ev); err != nil {
 		return
 	}
-	ev.StoreID, ev.ControllerID, _, _ = broker.ParseTopic(msg.Topic)
+	var ok bool
+	ev.StoreID, ev.ControllerID, _, ok = broker.ParseTopic(msg.Topic)
+	if !ok {
+		return
+	}
 	e.log.Info("device event", "store", ev.StoreID, "controller", ev.ControllerID, "type", ev.Type)
 	if err := e.journal.DeviceEvent(ev); err != nil {
 		e.log.Error("persist device event", "err", err)
+	}
+	if ev.Type == model.EventDisconnected {
+		e.mu.Lock()
+		e.markOfflineLocked(e.ctrlLocked(ev.StoreID, ev.ControllerID), time.Now())
+		e.mu.Unlock()
 	}
 }
 
@@ -230,13 +239,20 @@ func (e *Engine) checkOffline(now time.Time) {
 		if now.Sub(ref) <= e.cfg.OfflineTimeout {
 			continue
 		}
-		if len(st.findings) > 0 && st.findings[0].Code == model.RootCauseNetworkOffline {
-			continue
-		}
-		f := OfflineFinding(st.lastSeen, now)
-		st.findings = []model.Finding{f}
-		e.reconcileLocked(st, &f, now)
+		e.markOfflineLocked(st, now)
 	}
+}
+
+// markOfflineLocked raises GATEWAY_OFFLINE for a controller, either from the
+// watchdog (no telemetry for OfflineTimeout) or from a DISCONNECTED event.
+// The next telemetry clears it through the normal rule evaluation.
+func (e *Engine) markOfflineLocked(st *ctrlState, now time.Time) {
+	if len(st.findings) > 0 && st.findings[0].Code == model.RootCauseNetworkOffline {
+		return
+	}
+	f := OfflineFinding(st.lastSeen, now)
+	st.findings = []model.Finding{f}
+	e.reconcileLocked(st, &f, now)
 }
 
 // ---- Issue state machine --------------------------------------------------

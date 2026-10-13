@@ -98,7 +98,7 @@ docker-compose.yml       仅 Grafana
 
 | 优先级 | 根因码 | 触发条件 | 店长可自修 | 备件 |
 | :-: | :--- | :--- | :-: | :--- |
-| 0 | `GATEWAY_OFFLINE` | 看门狗：超过 `OFFLINE_TIMEOUT`（默认 30s）无遥测 | ✅ | — |
+| 0 | `GATEWAY_OFFLINE` | 收到 `DISCONNECTED` 事件（立即），或看门狗：超过 `OFFLINE_TIMEOUT`（默认 10s）无遥测 | ✅ | — |
 | 1 | `POWER_SUPPLY_ABNORMAL` | `power.status != NORMAL` 或 `voltage_mv < 10000` | ✅ | PSU-12V-5A |
 | 2 | `LOOP_CABLE_DISCONNECTED` | 供电正常 且 某 loop `status=OPEN_CIRCUIT` 或阻抗 > 10kΩ | ✅ | — |
 | 3 | `ANTENNA_TX_FAULT` | 某 antenna `status=FAULT` / `signal_tx_active=false` / 阻抗不在 30–80Ω | ❌ → 自动派单 | ANT-DRV-BOARD-V3, COAX-RG58-2M |
@@ -259,7 +259,7 @@ type Provider interface {
 | `-devices` | `DEVICES_DIR` | `data/devices` | |
 | `-logs` | `LOG_DIR` | `logs` | |
 | `-sim` | `SIMULATOR` | `true` | 关掉即“只等真实设备” |
-| `-offline-timeout` | `OFFLINE_TIMEOUT` | `30s` | |
+| `-offline-timeout` | `OFFLINE_TIMEOUT` | `10s` | |
 | `-verify-timeout` | `VERIFY_TIMEOUT` | `3s` | |
 | `-retention` | `TELEMETRY_RETENTION` | `6h` | 内存时序窗口 |
 | `-trip-cost` | `AVOIDED_TRIP_COST_EUR` | `2000` | |
@@ -293,7 +293,7 @@ docker compose up -d
 | NL-JUMBO-1042 Rotterdam (nl) | 地感线圈插头松动（Spec 原例） | 🔴 店长可自修 |
 | FR-CARREFOUR-7712 Paris (fr) | 供电 9.4V 欠压 | 🔴 店长可自修 |
 | DE-REWE-3301 Berlin (de) | 天线发射级损坏 | 🟠 自动派单 |
-| BE-DELHAIZE-0551 Brussels (fr) | 盒子不在线（`sim.online=false`） | 🔴 30s 后离线 |
+| BE-DELHAIZE-0551 Brussels (fr) | 盒子不在线（`sim.online=false`） | 🔴 启动约 10s 后离线 |
 | NL-AH-2210 Amsterdam (nl) | 正常 | 🟢 |
 | GB-TESCO-8812 London (en) | 正常，2 台控制器 | 🟢 |
 
@@ -311,7 +311,7 @@ docker compose up -d
 8. 可选：切语言（右上角 EN/NL/FR/DE）；或把 Carrefour 的 `voltage_mv` 改成 `12100`、`status` 改成 `NORMAL` 演示供电恢复。
 9. **收尾讲架构**：每个简化组件都是接口——内存 Broker → EMQX，日志文件 → TimescaleDB，模板 → GPT/Claude，诊断引擎代码原样上生产。
 
-其他可现场制造的故障：把任何健康设备的 `voltage_mv` 改成 `9000`（供电异常），或把 `checkout_antenna_2.signal_tx_active` 改成 `false`（硬件故障→自动派单），或删掉一个设备文件（30s 后离线）。
+其他可现场制造的故障：把任何健康设备的 `voltage_mv` 改成 `9000`（供电异常），或把 `checkout_antenna_2.signal_tx_active` 改成 `false`（硬件故障→自动派单），或删掉一个设备文件或把 `sim.online` 改成 `false`（立即离线）。
 
 ---
 

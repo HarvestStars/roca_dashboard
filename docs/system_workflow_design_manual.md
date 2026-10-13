@@ -115,7 +115,7 @@ flowchart TD
     Glob --> Stat["os.Stat(path) 检查文件修改时间 ModTime"]
     
     Stat --> CheckMod{"ModTime 是否改变?"}
-    CheckMod -- 未改变 --> CheckInterval{"距上次上报是否超过 interval_sec?<br/>(默认 10 秒)"}
+    CheckMod -- 未改变 --> CheckInterval{"距上次上报是否超过 interval_sec?<br/>(默认 5 秒)"}
     CheckMod -- 已改变 --> ReadFile["读取文件 os.ReadFile + 反序列化 DeviceFile<br/>标记 changed = true"]
     
     ReadFile --> SendEvent["发布 STATE_CHANGED 边缘事件到 broker"]
@@ -136,8 +136,9 @@ flowchart TD
    * 文件的扫描检测、内存覆写、心跳下发与云端命令响应，**全部都在 `Run()` 协程同一个 `select` 循环中串行执行**，完全不需要加互斥锁，兼具极致性能与并发安全性。
 3. **双重触发机制**：
    * **变更即报（无需等待心跳）**：文件一旦被修改（`changed == true`），在下一次 1 秒扫描时更新内存并触发发布，拔线改动秒级生效。
-   * **周期心跳（保活）**：文件未改动时，比对 `now.Sub(d.lastPublish) >= interval`，默认每 10 秒定时发送心跳。
-   * 设备文件中 `"sim": {"online": false}` 时控制器保持静默，引擎看门狗在 `OFFLINE_TIMEOUT`（默认 30 秒）后判定 `GATEWAY_OFFLINE`。
+   * **周期心跳（保活）**：文件未改动时，比对 `now.Sub(d.lastPublish) >= interval`，默认每 5 秒定时发送心跳。
+   * **断线通知（立即离线）**：设备文件从 `"online": true` 改为 `false`（或文件被删除）时，模拟器代替 Broker 发出 `DISCONNECTED` 事件（对应生产中 EMQX 的客户端断连通知），引擎收到后立即判定 `GATEWAY_OFFLINE`，无需等待超时。
+   * **超时兜底**：从未连上过的设备（如启动时即为 `online: false`）没有断线事件，由引擎看门狗在 `OFFLINE_TIMEOUT`（默认 10 秒，即连续丢失 2 次心跳）后判定离线，期间显示 `UNKNOWN`。
 
 #### 2.1.3 Jitter 传感器加噪与纯网络字节流隔离
 * **物理噪点仿真**：在 [`withJitter()`](../internal/simulator/simulator.go#L192) 中，为电压、电流、温度、阻抗微幅随机加噪（电压 $\pm 50\text{ mV}$、电流 $\pm 10\text{ mA}$、温度 $\pm 0.3\,^\circ\text{C}$、阻抗 $\pm 1\ \Omega$，阻抗仅对 1 kΩ 以下的值加噪，断路读数保持不变），让监控波形呈现出真实物理传感器的动态波动，同时不改变任何诊断结果。
@@ -179,7 +180,7 @@ flowchart TD
 | **遥测时序** | `logs/telemetry/YYYY-MM-DD.jsonl` | 收到每一包有效遥测 | `{"received_at": "...", "telemetry": { "power": {...}, "peripherals": {...} }}` |
 | **故障流水** | `logs/issues.jsonl` | Issue 打开、验证尝试、升级、恢复 | `{"at": "...", "event": "opened\|verify_attempt\|escalated\|resolved", "issue": {...}}` |
 | **维修工单** | `logs/tickets.jsonl` | 硬件损坏自动升级、店长手动升级、工单关闭 | `{"ticket_id": "...", "store_id": "...", "code": "...", "source": "AUTO\|STORE_MANAGER", "status": "OPEN\|CLOSED", "snapshot": [...]}` |
-| **设备事件** | `logs/device_events.jsonl` | 控制器上报的边缘事件（如设备文件被修改时的 `STATE_CHANGED`） | `{"store_id": "...", "controller_id": "...", "timestamp": 0, "type": "STATE_CHANGED", "detail": "..."}` |
+| **设备事件** | `logs/device_events.jsonl` | 设备文件被修改（`STATE_CHANGED`）、连接断开（`DISCONNECTED`） | `{"store_id": "...", "controller_id": "...", "timestamp": 0, "type": "STATE_CHANGED|DISCONNECTED", "detail": "..."}` |
 
 #### 2.2.2 Grafana 与后端交互的真实本质
 * **关键纠偏**：**Grafana 绝不是直接读取磁盘上的 `issues.jsonl` 或 `telemetry` 文件**！

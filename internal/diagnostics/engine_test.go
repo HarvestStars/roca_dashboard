@@ -156,6 +156,26 @@ func TestOfflineWatchdog(t *testing.T) {
 	}
 }
 
+// A DISCONNECTED event marks the controller offline at once, without waiting
+// for the watchdog (OfflineTimeout is an hour in the harness).
+func TestDisconnectedEventGoesOfflineImmediately(t *testing.T) {
+	h := newHarness(t, t.TempDir())
+	h.send(telemetry(false, false, 12000))
+	if s := h.status(); s != model.StatusHealthy {
+		t.Fatalf("status=%s", s)
+	}
+	b, _ := json.Marshal(model.DeviceEvent{StoreID: "S1", ControllerID: "C1", Type: model.EventDisconnected})
+	h.bus.Publish(broker.Topic("S1", "C1", broker.KindEvents), b)
+	time.Sleep(30 * time.Millisecond)
+	if s := h.status(); s != model.StatusOffline {
+		t.Fatalf("status=%s", s)
+	}
+	h.send(telemetry(false, false, 12000))
+	if s := h.status(); s != model.StatusHealthy {
+		t.Fatalf("status=%s", s)
+	}
+}
+
 func TestJournalReplayRestoresOpenIssue(t *testing.T) {
 	dir := t.TempDir()
 	h := newHarness(t, dir)

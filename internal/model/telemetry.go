@@ -71,6 +71,13 @@ type DeviceEvent struct {
 	Detail       string `json:"detail,omitempty"`
 }
 
+const (
+	EventStateChanged = "STATE_CHANGED"
+	// EventDisconnected is raised by the ingestion layer, not the device: in
+	// production EMQX emits it when the controller's connection drops.
+	EventDisconnected = "DISCONNECTED"
+)
+
 // Command is sent by the cloud on .../commands.
 type Command struct {
 	Command   string `json:"command"` // SELF_TEST | RESET

@@ -50,7 +50,7 @@ func Load() Config {
 	flag.StringVar(&c.DevicesDir, "devices", env("DEVICES_DIR", "data/devices"), "simulated controller files")
 	flag.StringVar(&c.LogDir, "logs", env("LOG_DIR", "logs"), "log-file persistence directory")
 	flag.BoolVar(&c.SimulatorEnabled, "sim", envBool("SIMULATOR", true), "run the file-backed device simulator")
-	flag.DurationVar(&c.OfflineTimeout, "offline-timeout", envDur("OFFLINE_TIMEOUT", 30*time.Second), "no telemetry for this long => GATEWAY_OFFLINE")
+	flag.DurationVar(&c.OfflineTimeout, "offline-timeout", envDur("OFFLINE_TIMEOUT", 10*time.Second), "no telemetry for this long => GATEWAY_OFFLINE")
 	flag.DurationVar(&c.VerifyTimeout, "verify-timeout", envDur("VERIFY_TIMEOUT", 3*time.Second), "wait for self-test answer")
 	flag.DurationVar(&c.TelemetryRetention, "retention", envDur("TELEMETRY_RETENTION", 6*time.Hour), "in-memory telemetry window for dashboards")
 	flag.IntVar(&c.AvoidedTripCostEUR, "trip-cost", envInt("AVOIDED_TRIP_COST_EUR", 2000), "cost of one avoided site visit (EUR)")

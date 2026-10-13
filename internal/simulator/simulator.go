@@ -25,7 +25,7 @@ type DeviceFile struct {
 
 type SimControl struct {
 	Online      *bool `json:"online,omitempty"`       // false = box unplugged / no network (default true)
-	IntervalSec int   `json:"interval_sec,omitempty"` // heartbeat period (default 10)
+	IntervalSec int   `json:"interval_sec,omitempty"` // heartbeat period (default 5)
 	Jitter      *bool `json:"jitter,omitempty"`       // add sensor noise so charts look alive (default true)
 }
 
@@ -33,7 +33,7 @@ func (s SimControl) online() bool { return s.Online == nil || *s.Online }
 func (s SimControl) jitter() bool { return s.Jitter == nil || *s.Jitter }
 func (s SimControl) interval() time.Duration {
 	if s.IntervalSec <= 0 {
-		return 10 * time.Second
+		return 5 * time.Second
 	}
 	return time.Duration(s.IntervalSec) * time.Second
 }
@@ -98,6 +98,7 @@ func (s *Simulator) tick(now time.Time) {
 	seen := map[string]bool{}
 	for _, p := range paths {
 		seen[p] = true
+		wasOnline := s.devices[p] != nil && s.devices[p].file.Sim.online()
 		changed, err := s.load(p)
 		if err != nil {
 			s.log.Warn("device file unreadable, skipping", "file", filepath.Base(p), "err", err)
@@ -105,15 +106,21 @@ func (s *Simulator) tick(now time.Time) {
 		}
 		d := s.devices[p]
 		if changed {
-			s.event(d, "STATE_CHANGED", "device file modified")
+			if wasOnline && !d.file.Sim.online() {
+				s.disconnected(d, "device went offline (sim.online=false)")
+			}
+			s.event(d, model.EventStateChanged, "device file modified")
 		}
 		if changed || now.Sub(d.lastPublish) >= d.file.Sim.interval() {
 			s.publish(d, now)
 		}
 	}
-	for p := range s.devices {
+	for p, d := range s.devices {
 		if !seen[p] {
-			delete(s.devices, p) // deleted file == device removed; engine will flag it offline
+			delete(s.devices, p) // deleted file == device removed
+			if d.file.Sim.online() {
+				s.disconnected(d, "device file removed")
+			}
 		}
 	}
 }
@@ -185,6 +192,15 @@ func (s *Simulator) event(d *device, typ, detail string) {
 	}
 	b, _ := json.Marshal(model.DeviceEvent{StoreID: d.file.StoreID, ControllerID: d.file.ControllerID,
 		Timestamp: time.Now().Unix(), Type: typ, Detail: detail})
+	_ = s.broker.Publish(broker.Topic(d.file.StoreID, d.file.ControllerID, broker.KindEvents), b)
+}
+
+// disconnected plays the broker's part: when a controller's connection drops,
+// EMQX notifies the cloud right away, so the engine need not wait for the
+// offline timeout. It is published even though the device itself is silent.
+func (s *Simulator) disconnected(d *device, detail string) {
+	b, _ := json.Marshal(model.DeviceEvent{StoreID: d.file.StoreID, ControllerID: d.file.ControllerID,
+		Timestamp: time.Now().Unix(), Type: model.EventDisconnected, Detail: detail})
 	_ = s.broker.Publish(broker.Topic(d.file.StoreID, d.file.ControllerID, broker.KindEvents), b)
 }
 
